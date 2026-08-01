@@ -1,0 +1,201 @@
+{
+  "protocols": {
+    "standard": {
+      "id": "standard",
+      "name": "Protocolo Estándar",
+      "description": "Rutina base de fuerza y control motor",
+      "color": "neon-green",
+      "exercises": [
+        {
+          "id": "prensa_tempo",
+          "name": "Prensa Tempo 3-1-1",
+          "category": "fuerza",
+          "muscles": ["cuadriceps", "gluteos", "isquiotibiales"],
+          "sets": 4,
+          "reps": "8-10",
+          "tempo": "3-1-1",
+          "rest": 90,
+          "notes": "Control excéntrico de 3s. Foco en activación glútea en el concéntrico.",
+          "warnings": ["Evitar valgo de rodilla", "Mantener lumbar neutra"],
+          "rehab_priority": "alta",
+          "icon": "weight"
+        },
+        {
+          "id": "hip_thrust",
+          "name": "Hip Thrust Pesado",
+          "category": "fuerza",
+          "muscles": ["gluteos", "isquiotibiales", "core"],
+          "sets": 4,
+          "reps": "6-8",
+          "tempo": "2-1-2",
+          "rest": 120,
+          "notes": "Carga progresiva. Activar core antes del movimiento. Key para proteger la pubis.",
+          "warnings": ["No hiperlordosis lumbar", "Empuje con talones"],
+          "rehab_priority": "alta",
+          "icon": "zap"
+        },
+        {
+          "id": "copenhagen_plank",
+          "name": "Copenhagen Plank",
+          "category": "core_antirotacion",
+          "muscles": ["aductores", "core", "oblicuos"],
+          "sets": 3,
+          "reps": "20-30s",
+          "tempo": "isometrico",
+          "rest": 60,
+          "notes": "PROTOCOLO PUBALGIA. Activación de aductores isométrica. Progresión: rodilla apoyada → pie apoyado.",
+          "warnings": ["Detener si hay dolor inguinal", "Pelvis neutra siempre"],
+          "rehab_priority": "critica",
+          "icon": "shield"
+        },
+        {
+          "id": "pallof_press",
+          "name": "Pallof Press",
+          "category": "core_antirotacion",
+          "muscles": ["core", "oblicuos", "transverso"],
+          "sets": 3,
+          "reps": "12 cada lado",
+          "tempo": "2-2-2",
+          "rest": 60,
+          "notes": "Anti-rotación pura. Esencial para el gesto del enganche. Cable o banda.",
+          "warnings": ["No rotar el tronco", "Respiración diafragmática"],
+          "rehab_priority": "critica",
+          "icon": "crosshair"
+        }
+      ]
+    },
+    "bypass": {
+      "id": "bypass",
+      "name": "Protocolo Bypass Sóleo",
+      "description": "Activado por alerta de dolor en gemelo/sóleo. Cadena posterior sin impacto.",
+      "color": "neon-orange",
+      "alert": "MODO BYPASS ACTIVADO - Protocolo de protección de sóleo en curso",
+      "exercises": [
+        {
+          "id": "rdl_talones",
+          "name": "RDL en Talones",
+          "category": "bypass",
+          "muscles": ["isquiotibiales", "gluteos"],
+          "sets": 3,
+          "reps": "10-12",
+          "tempo": "3-1-2",
+          "rest": 90,
+          "notes": "BYPASS: Apoyar solo el talón. Elimina tensión en sóleo completamente.",
+          "warnings": ["Solo talones en contacto", "Sin puntillas bajo ningún concepto"],
+          "rehab_priority": "alta",
+          "icon": "arrow-down"
+        },
+        {
+          "id": "hip_thrust_bypass",
+          "name": "Hip Thrust (Talón elevado)",
+          "category": "bypass",
+          "muscles": ["gluteos", "core"],
+          "sets": 4,
+          "reps": "8-10",
+          "tempo": "2-1-2",
+          "rest": 90,
+          "notes": "BYPASS: Plato bajo el talón para elevar la punta. Descarga total de sóleo.",
+          "warnings": ["Punta del pie libre", "Evitar plantar flexión"],
+          "rehab_priority": "alta",
+          "icon": "zap"
+        },
+        {
+          "id": "copenhagen_plank_bypass",
+          "name": "Copenhagen Plank (Rodilla apoyada)",
+          "category": "bypass",
+          "muscles": ["aductores", "core"],
+          "sets": 3,
+          "reps": "20s",
+          "tempo": "isometrico",
+          "rest": 60,
+          "notes": "BYPASS: Versión con rodilla apoyada. Sin carga en tobillo-sóleo.",
+          "warnings": ["Rodilla apoyada, no el pie"],
+          "rehab_priority": "critica",
+          "icon": "shield"
+        },
+        {
+          "id": "pallof_sentado",
+          "name": "Pallof Press Sentado",
+          "category": "bypass",
+          "muscles": ["core", "oblicuos"],
+          "sets": 3,
+          "reps": "12 cada lado",
+          "tempo": "2-2-2",
+          "rest": 60,
+          "notes": "BYPASS: Ejecutar sentado. Descarga total de miembros inferiores.",
+          "warnings": ["Columna recta", "Sin apoyo en pies si hay dolor"],
+          "rehab_priority": "critica",
+          "icon": "crosshair"
+        }
+      ]
+    },
+    "neural_priming": {
+      "id": "neural_priming",
+      "name": "Neural Priming",
+      "description": "Pre-partido. Volumen bajo, velocidad alta, cero fatiga acumulada.",
+      "color": "neon-blue",
+      "alert": "MODO PRE-PARTIDO - Activación neural sin fatiga",
+      "exercises": [
+        {
+          "id": "activacion_glutes",
+          "name": "Activación Glútea (Band Walk)",
+          "category": "activacion",
+          "muscles": ["gluteos", "abductores"],
+          "sets": 2,
+          "reps": "15 cada lado",
+          "tempo": "controlado",
+          "rest": 45,
+          "notes": "PRIMING: Activar, no fatigar. Banda media alrededor de rodillas.",
+          "warnings": ["Máximo 50% de intensidad"],
+          "rehab_priority": "normal",
+          "icon": "activity"
+        },
+        {
+          "id": "squat_explosivo",
+          "name": "Squat Explosivo (sin carga)",
+          "category": "activacion",
+          "muscles": ["cuadriceps", "gluteos"],
+          "sets": 3,
+          "reps": "5",
+          "tempo": "explosivo",
+          "rest": 60,
+          "notes": "PRIMING: Velocidad máxima en el concéntrico. Peso corporal solamente.",
+          "warnings": ["Sin barra", "Máxima velocidad de ejecución"],
+          "rehab_priority": "normal",
+          "icon": "zap"
+        },
+        {
+          "id": "pallof_priming",
+          "name": "Pallof Press Rápido",
+          "category": "activacion",
+          "muscles": ["core", "oblicuos"],
+          "sets": 2,
+          "reps": "8 cada lado",
+          "tempo": "1-0-1",
+          "rest": 45,
+          "notes": "PRIMING: Activar el patrón anti-rotación del enganche. Banda liviana.",
+          "warnings": ["Carga muy baja", "Foco en velocidad de patrón"],
+          "rehab_priority": "normal",
+          "icon": "crosshair"
+        }
+      ]
+    }
+  },
+  "weeklySchedule": {
+    "monday": { "protocolId": "standard", "focus": "Fuerza + Core" },
+    "tuesday": { "protocolId": "neural_priming", "focus": "Activación" },
+    "wednesday": { "protocolId": "standard", "focus": "Fuerza + Pubalgia" },
+    "thursday": { "protocolId": null, "focus": "Recuperación Activa" },
+    "friday": { "protocolId": "standard", "focus": "Fuerza + Core" },
+    "saturday": { "protocolId": "neural_priming", "focus": "Pre-Partido" },
+    "sunday": { "protocolId": null, "focus": "Descanso Total" }
+  },
+  "nutritionChecklist": [
+    { "id": "water", "label": "Agua > 3L", "icon": "droplets", "critical": true },
+    { "id": "protein", "label": "Proteína óptima (2g/kg)", "icon": "beef", "critical": true },
+    { "id": "no_sugar", "label": "Cero harinas/azúcar refinado", "icon": "ban", "critical": true },
+    { "id": "sleep", "label": "Sueño > 7h", "icon": "moon", "critical": true },
+    { "id": "creatine", "label": "Creatina 5g", "icon": "pill", "critical": false },
+    { "id": "omega3", "label": "Omega-3 / Anti-inflamatorio", "icon": "fish", "critical": false }
+  ]
+}
