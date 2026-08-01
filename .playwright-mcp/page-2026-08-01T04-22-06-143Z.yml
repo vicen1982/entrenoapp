@@ -1,0 +1,66 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "Skip to content" [ref=e6] [cursor=pointer]:
+        - /url: "#main"
+      - banner [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - link "Supabase Back to organization home":
+              - /url: /dashboard/organizations
+              - img "Supabase"
+              - generic [ref=e12] [cursor=pointer]: Back to organization home
+          - generic [ref=e13]:
+            - button "Feedback" [ref=e14] [cursor=pointer]
+            - generic [ref=e16]:
+              - button [ref=e17] [cursor=pointer]:
+                - paragraph [ref=e22]: Search...
+                - generic [ref=e23]: Ctrl K
+              - button "Help" [ref=e25] [cursor=pointer]
+              - button "Advisor Center" [ref=e32] [cursor=pointer]
+            - button [ref=e37] [cursor=pointer]
+      - generic [ref=e42]:
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - navigation
+          - button "Sidebar control" [ref=e50] [cursor=pointer]
+        - main [ref=e57]:
+          - generic [ref=e59]:
+            - separator [ref=e63]
+            - main [ref=e74]:
+              - generic [ref=e75]:
+                - generic [ref=e76]:
+                  - generic [ref=e77]:
+                    - button "Collapse sidebar" [ref=e78]
+                    - tablist [ref=e83]:
+                      - button [ref=e84]
+                  - status [ref=e87]
+                - generic [ref=e89]:
+                  - generic [ref=e90]:
+                    - generic [ref=e91]: Autosave enabled
+                    - button "More actions" [ref=e93] [cursor=pointer]
+                    - generic [ref=e99]:
+                      - generic [ref=e100]:
+                        - generic [ref=e101] [cursor=pointer]:
+                          - generic [ref=e102]: Source
+                          - button "Primary database" [ref=e103]
+                        - button "Role postgres" [ref=e111] [cursor=pointer]:
+                          - generic [ref=e113]:
+                            - generic [ref=e114]: Role
+                            - generic [ref=e115]: postgres
+                      - button "Limit 100 rows" [ref=e118] [cursor=pointer]
+                      - button "Run" [ref=e124] [cursor=pointer]:
+                        - generic [ref=e126]: Ctrl ↵
+                  - separator [ref=e135]
+    - generic [ref=e152]:
+      - generic:
+        - img "Background pattern"
+      - generic [ref=e153]:
+        - button "Close banner" [ref=e155] [cursor=pointer]
+        - generic [ref=e160]:
+          - generic [ref=e161]: Notice
+          - generic [ref=e162]:
+            - paragraph [ref=e163]: We're updating our Terms of Service
+            - paragraph [ref=e164]: Our Data Processing Addendum is now built into the Terms, effective August 1, 2026.
+          - button "Learn more" [ref=e165] [cursor=pointer]
+  - alert [ref=e167]
