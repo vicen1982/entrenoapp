@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
 import { useCatalog, filterByProtocol } from '../../store/useCatalog'
+import { useSession } from '../../store/useSession'
 import ExerciseCard from './ExerciseCard'
+import SessionScreen from './SessionScreen'
 import exercisesData from '../../data/exercises.json'
 import {
   Activity, AlertTriangle, Zap, Shield, ChevronDown, ChevronUp,
-  Dumbbell, Anchor, Flame, ShieldCheck, HeartPulse, Wrench, Database
+  Dumbbell, Anchor, Flame, ShieldCheck, HeartPulse, Wrench, Database, Play
 } from 'lucide-react'
 
 const PROTOCOL_META = {
@@ -92,6 +94,12 @@ export default function TrainingScreen() {
   const alerts = useStore((s) => s.alerts)
   const toggleAlert = useStore((s) => s.toggleAlert)
   const { modules, exercises, loaded, error } = useCatalog()
+  const session = useSession((s) => s.session)
+  const checking = useSession((s) => s.checking)
+  const startSession = useSession((s) => s.start)
+
+  // Sesión activa => modo tracker
+  if (session) return <SessionScreen />
 
   const meta = PROTOCOL_META[activeProtocol]
   const Icon = meta.icon
@@ -120,6 +128,16 @@ export default function TrainingScreen() {
 
   return (
     <div className="space-y-4">
+      {/* Iniciar sesión */}
+      <button
+        onClick={() => startSession(activeProtocol)}
+        disabled={checking}
+        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-neon-green/15 border border-neon-green/40 text-neon-green text-sm font-bold tracking-widest transition-panel glow-green disabled:opacity-50"
+      >
+        <Play size={16} strokeWidth={2.5} />
+        INICIAR SESIÓN DE ENTRENAMIENTO
+      </button>
+
       {/* Protocol header */}
       <div className={`bg-panel-card rounded-2xl p-4 border panel-border-${meta.color === 'neon-green' ? 'green' : meta.color === 'neon-orange' ? 'orange' : 'blue'}`}>
         <div className="flex items-center gap-3">

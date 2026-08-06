@@ -4,15 +4,18 @@ import './index.css'
 import App from './App.jsx'
 import { useStore } from './store/useStore.js'
 import { useCatalog } from './store/useCatalog.js'
+import { useSession } from './store/useSession.js'
 
 function Root() {
   const loadFromSupabase = useStore((s) => s.loadFromSupabase)
   const loaded = useStore((s) => s.loaded)
   const loadCatalog = useCatalog((s) => s.load)
+  const checkActiveSession = useSession((s) => s.checkActive)
 
   useEffect(() => {
     loadFromSupabase()
     loadCatalog()
+    checkActiveSession()
   }, [])
 
   if (!loaded) {
