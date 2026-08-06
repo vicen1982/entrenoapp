@@ -1,14 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { useCatalog, filterByProtocol } from '../../store/useCatalog'
 import { useSession } from '../../store/useSession'
+import { useAilments, excludedByAilments } from '../../store/useAilments'
 import ExerciseCard from './ExerciseCard'
 import SessionScreen from './SessionScreen'
 import HistoryScreen from './HistoryScreen'
+import CoachScreen from './CoachScreen'
 import exercisesData from '../../data/exercises.json'
 import {
   Activity, AlertTriangle, Zap, Shield, ChevronDown, ChevronUp,
-  Dumbbell, Anchor, Flame, ShieldCheck, HeartPulse, Wrench, Database, Play
+  Dumbbell, Anchor, Flame, ShieldCheck, HeartPulse, Wrench, Database, Play,
+  Sparkles, ShieldAlert, X
 } from 'lucide-react'
 
 const PROTOCOL_META = {
@@ -98,7 +101,11 @@ export default function TrainingScreen() {
   const session = useSession((s) => s.session)
   const checking = useSession((s) => s.checking)
   const startSession = useSession((s) => s.start)
+  const { ailments, load: loadAilments, resolve: resolveAilment } = useAilments()
   const [view, setView] = useState('hoy')
+  const [showCoach, setShowCoach] = useState(false)
+
+  useEffect(() => { loadAilments() }, [])
 
   // Sesión activa => modo tracker
   if (session) return <SessionScreen />
@@ -113,7 +120,8 @@ export default function TrainingScreen() {
   }[weekDay] || 'monday'
   const todaySchedule = exercisesData.weeklySchedule[dayKey]
 
-  const available = filterByProtocol(exercises, activeProtocol)
+  const excludedIds = excludedByAilments(ailments)
+  const available = filterByProtocol(exercises, activeProtocol, excludedIds)
 
   if (loaded && (error || exercises.length === 0)) {
     return (
@@ -149,6 +157,35 @@ export default function TrainingScreen() {
 
       {view === 'historial' ? <HistoryScreen /> : (
       <>
+      {/* Entrenador IA */}
+      <button
+        onClick={() => setShowCoach(true)}
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-neon-blue/10 border border-neon-blue/30 text-neon-blue text-xs font-bold tracking-widest transition-panel"
+      >
+        <Sparkles size={14} />
+        PEGAR RUTINA / REPORTAR DOLENCIA
+      </button>
+
+      {/* Dolencias activas */}
+      {ailments.length > 0 && (
+        <div className="space-y-2">
+          {ailments.map((a) => (
+            <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl bg-neon-orange/5 border border-neon-orange/25">
+              <ShieldAlert size={14} className="text-neon-orange shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-neon-orange font-medium truncate">{a.description}</div>
+                <div className="text-[10px] text-slate-500">
+                  {(a.excluded_exercise_ids || []).length} ejercicios restringidos
+                </div>
+              </div>
+              <button onClick={() => resolveAilment(a.id)} className="p-1.5 text-slate-600 hover:text-neon-green transition-panel shrink-0">
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Iniciar sesión */}
       <button
         onClick={() => startSession(activeProtocol)}
@@ -261,6 +298,8 @@ export default function TrainingScreen() {
       </div>
       </>
       )}
+
+      {showCoach && <CoachScreen onClose={() => { setShowCoach(false); loadAilments() }} />}
     </div>
   )
 }

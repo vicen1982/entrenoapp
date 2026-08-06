@@ -46,9 +46,11 @@ export const useCatalog = create((set, get) => ({
   },
 }))
 
-// Filtra el catálogo según el protocolo activo
-export function filterByProtocol(exercises, protocol) {
-  if (protocol === 'bypass') return exercises.filter((e) => !e.soleo_load)
-  if (protocol === 'neural_priming') return exercises.filter((e) => e.priming_ok)
-  return exercises
+// Filtra el catálogo según el protocolo activo y, opcionalmente, dolencias activas
+export function filterByProtocol(exercises, protocol, excludedIds = null) {
+  let list = exercises
+  if (protocol === 'bypass') list = list.filter((e) => !e.soleo_load)
+  if (protocol === 'neural_priming') list = list.filter((e) => e.priming_ok)
+  if (excludedIds && excludedIds.size > 0) list = list.filter((e) => !excludedIds.has(e.id))
+  return list
 }

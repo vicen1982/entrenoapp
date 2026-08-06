@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from '../../store/useSession'
 import { useCatalog, filterByProtocol } from '../../store/useCatalog'
+import { useAilments, excludedByAilments } from '../../store/useAilments'
 import {
   Play, Square, Plus, X, Check, Timer, Search,
   ChevronDown, ChevronUp, Trash2, Flag
@@ -184,10 +185,12 @@ function SessionExercise({ exercise, logs, onCompleteSet, onUncompleteSet, onUpd
 /* ---------- Selector de ejercicios ---------- */
 function ExercisePicker({ protocol, excludeIds, onPick, onClose }) {
   const { modules, exercises } = useCatalog()
+  const { ailments } = useAilments()
   const [search, setSearch] = useState('')
   const [openModule, setOpenModule] = useState(null)
 
-  const available = filterByProtocol(exercises, protocol).filter((e) => !excludeIds.includes(e.id))
+  const excludedIds = excludedByAilments(ailments)
+  const available = filterByProtocol(exercises, protocol, excludedIds).filter((e) => !excludeIds.includes(e.id))
   const filtered = search.trim()
     ? available.filter((e) => e.name.toLowerCase().includes(search.toLowerCase()))
     : available
