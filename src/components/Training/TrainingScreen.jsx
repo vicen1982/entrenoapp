@@ -4,6 +4,7 @@ import { useCatalog, filterByProtocol } from '../../store/useCatalog'
 import { useSession } from '../../store/useSession'
 import ExerciseCard from './ExerciseCard'
 import SessionScreen from './SessionScreen'
+import HistoryScreen from './HistoryScreen'
 import exercisesData from '../../data/exercises.json'
 import {
   Activity, AlertTriangle, Zap, Shield, ChevronDown, ChevronUp,
@@ -97,6 +98,7 @@ export default function TrainingScreen() {
   const session = useSession((s) => s.session)
   const checking = useSession((s) => s.checking)
   const startSession = useSession((s) => s.start)
+  const [view, setView] = useState('hoy')
 
   // Sesión activa => modo tracker
   if (session) return <SessionScreen />
@@ -128,6 +130,25 @@ export default function TrainingScreen() {
 
   return (
     <div className="space-y-4">
+      {/* Switch HOY / HISTORIAL */}
+      <div className="grid grid-cols-2 gap-2">
+        {[['hoy', 'HOY'], ['historial', 'HISTORIAL']].map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setView(id)}
+            className={`py-2.5 rounded-xl border text-xs font-bold tracking-widest transition-panel ${
+              view === id
+                ? 'bg-neon-green/10 border-neon-green/40 text-neon-green'
+                : 'bg-panel-card border-panel-border text-slate-500'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === 'historial' ? <HistoryScreen /> : (
+      <>
       {/* Iniciar sesión */}
       <button
         onClick={() => startSession(activeProtocol)}
@@ -238,6 +259,8 @@ export default function TrainingScreen() {
           })}
         </div>
       </div>
+      </>
+      )}
     </div>
   )
 }
