@@ -3,13 +3,16 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { useStore } from './store/useStore.js'
+import { useCatalog } from './store/useCatalog.js'
 
 function Root() {
   const loadFromSupabase = useStore((s) => s.loadFromSupabase)
   const loaded = useStore((s) => s.loaded)
+  const loadCatalog = useCatalog((s) => s.load)
 
   useEffect(() => {
     loadFromSupabase()
+    loadCatalog()
   }, [])
 
   if (!loaded) {

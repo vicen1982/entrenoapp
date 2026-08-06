@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 
 * {
   box-sizing: border-box;
@@ -10,101 +10,81 @@
 
 body {
   margin: 0;
-  background-color: #0a0f1e;
+  background-color: #0b0f17;
   color: #e2e8f0;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar personalizado */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d1526;
+  background: #111927;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a2540;
+  background: #1e2a3d;
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00ff9d44;
+  background: #2ee6a844;
 }
 
-/* Glow effects */
+/* Glow effects (suaves) */
 .glow-green {
-  box-shadow: 0 0 10px #00ff9d44, 0 0 20px #00ff9d22;
+  box-shadow: 0 0 12px #2ee6a822, 0 0 24px #2ee6a811;
 }
 .glow-orange {
-  box-shadow: 0 0 10px #ff6b2b44, 0 0 20px #ff6b2b22;
+  box-shadow: 0 0 12px #fb923c22, 0 0 24px #fb923c11;
 }
 .glow-blue {
-  box-shadow: 0 0 10px #00d4ff44, 0 0 20px #00d4ff22;
+  box-shadow: 0 0 12px #38bdf822, 0 0 24px #38bdf811;
 }
 
 .text-glow-green {
-  text-shadow: 0 0 8px #00ff9d88;
+  text-shadow: 0 0 10px #2ee6a855;
 }
 .text-glow-orange {
-  text-shadow: 0 0 8px #ff6b2b88;
+  text-shadow: 0 0 10px #fb923c55;
 }
 .text-glow-blue {
-  text-shadow: 0 0 8px #00d4ff88;
+  text-shadow: 0 0 10px #38bdf855;
 }
 
 /* Panel borders */
 .panel-border {
-  border: 1px solid #1a2540;
+  border: 1px solid #1e2a3d;
 }
 .panel-border-green {
-  border: 1px solid #00ff9d33;
+  border: 1px solid #2ee6a833;
 }
 .panel-border-orange {
-  border: 1px solid #ff6b2b33;
+  border: 1px solid #fb923c33;
 }
 .panel-border-blue {
-  border: 1px solid #00d4ff33;
+  border: 1px solid #38bdf833;
 }
 
-/* Scan line effect */
-.scan-line::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #00ff9d22, transparent);
-  animation: scan 4s linear infinite;
-}
-
-@keyframes scan {
-  0% { top: 0; }
-  100% { top: 100%; }
-}
-
-/* Terminal cursor */
-.cursor::after {
-  content: '█';
-  animation: blink 1s step-end infinite;
-  color: #00ff9d;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* Transition suave */
+/* Transición suave */
 .transition-panel {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Grid background */
-.grid-bg {
-  background-image:
-    linear-gradient(rgba(26, 37, 64, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(26, 37, 64, 0.3) 1px, transparent 1px);
-  background-size: 30px 30px;
+/* Números y datos en mono */
+.num {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Safe area para bottom nav (iPhone) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Tap highlight off en mobile */
+button {
+  -webkit-tap-highlight-color: transparent;
 }
