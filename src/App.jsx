@@ -6,10 +6,10 @@ import NextDeployment from './components/Dashboard/NextDeployment'
 import AlertPanel from './components/Dashboard/AlertPanel'
 import TrainingScreen from './components/Training/TrainingScreen'
 import SystemScreen from './components/System/SystemScreen'
+import ScannerScreen from './components/Scanner/ScannerScreen'
 import Firewall from './components/Firewall/Firewall'
 import { useStore } from './store/useStore'
 import { useCatalog } from './store/useCatalog'
-import { PersonStanding } from 'lucide-react'
 
 function HomeScreen() {
   const { exercises, modules } = useCatalog()
@@ -38,24 +38,6 @@ function HomeScreen() {
             <div className="text-[10px] text-slate-600 tracking-widest mt-0.5">{label}</div>
           </div>
         ))}
-      </div>
-    </div>
-  )
-}
-
-function ScannerScreen() {
-  return (
-    <div className="bg-panel-card rounded-2xl border border-panel-border p-8 text-center space-y-4">
-      <div className="inline-flex p-4 rounded-2xl bg-neon-blue/10 border border-neon-blue/20">
-        <PersonStanding size={32} className="text-neon-blue" />
-      </div>
-      <div>
-        <div className="text-sm font-bold text-neon-blue tracking-wider mb-1">BODY SCANNER</div>
-        <p className="text-xs text-slate-500 leading-relaxed">
-          Mapa anatómico interactivo con heat map de músculos trabajados.
-          <br />
-          <span className="text-slate-600 font-mono">EN CONSTRUCCIÓN — FASE 3</span>
-        </p>
       </div>
     </div>
   )
