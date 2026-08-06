@@ -7,7 +7,7 @@ import AlertPanel from './components/Dashboard/AlertPanel'
 import TrainingScreen from './components/Training/TrainingScreen'
 import SystemScreen from './components/System/SystemScreen'
 import ScannerScreen from './components/Scanner/ScannerScreen'
-import Firewall from './components/Firewall/Firewall'
+import FuelScreen from './components/Firewall/FuelScreen'
 import { useStore } from './store/useStore'
 import { useCatalog } from './store/useCatalog'
 
@@ -54,7 +54,7 @@ export default function App() {
         {activeTab === 'inicio' && <HomeScreen />}
         {activeTab === 'entrenar' && <TrainingScreen />}
         {activeTab === 'escaner' && <ScannerScreen />}
-        {activeTab === 'combustible' && <Firewall />}
+        {activeTab === 'combustible' && <FuelScreen />}
         {activeTab === 'sistema' && <SystemScreen />}
       </main>
 
