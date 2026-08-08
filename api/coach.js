@@ -1,9 +1,9 @@
 // Vercel Serverless Function — POST /api/coach
-// Interpreta texto libre (rutina pegada o dolencia reportada) usando Gemini
+// Interpreta texto libre (rutina pegada o dolencia reportada) usando Groq
 // y lo estructura contra el catálogo de ejercicios existente.
 
-const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 const SYSTEM_PROMPT = `Sos el motor de interpretación de ENGANCHE_OS, una app de entrenamiento.
 Recibís: (1) un texto libre del usuario (puede ser una rutina pegada, o el reporte de una dolencia física),
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
     return
   }
 
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) {
     res.status(500).json({ error: 'missing_api_key' })
     return
@@ -62,27 +62,31 @@ export default async function handler(req, res) {
   const userPrompt = `CATÁLOGO DISPONIBLE:\n${catalogSummary}\n\nTEXTO DEL USUARIO:\n${text.trim()}`
 
   try {
-    const geminiRes = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+    const groqRes = await fetch(GROQ_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        generationConfig: {
-          temperature: 0.4,
-          responseMimeType: 'application/json',
-        },
+        model: GROQ_MODEL,
+        temperature: 0.4,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt },
+        ],
       }),
     })
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text()
-      res.status(502).json({ error: 'gemini_error', detail: errText.slice(0, 500) })
+    if (!groqRes.ok) {
+      const errText = await groqRes.text()
+      res.status(502).json({ error: 'groq_error', detail: errText.slice(0, 500) })
       return
     }
 
-    const data = await geminiRes.json()
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text
+    const data = await groqRes.json()
+    const raw = data.choices?.[0]?.message?.content
     if (!raw) {
       res.status(502).json({ error: 'empty_response' })
       return
