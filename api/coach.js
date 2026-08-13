@@ -5,6 +5,10 @@
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
+// Una rutina semanal larga puede tardar ~10s en generarse, y el reintento por
+// rate limit suma unos segundos más: sin esto Vercel cortaría con un 502 vacío.
+export const config = { maxDuration: 60 }
+
 const SYSTEM_PROMPT = `Sos el motor de interpretación de ENGANCHE_OS, una app de entrenamiento.
 Recibís: (1) un texto libre del usuario (puede ser una rutina pegada, o el reporte de una dolencia física),
 y (2) el catálogo de ejercicios disponibles en la app (id, nombre, músculos, si tiene carga de sóleo, si es apto para priming).
