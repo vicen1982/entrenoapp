@@ -4,6 +4,16 @@ import { useAilments } from './useAilments'
 import { useSession } from './useSession'
 import { useRoutinePlan, todayKey } from './useRoutinePlan'
 
+function slugify(name) {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+}
+
 export const useCoach = create((set) => ({
   loading: false,
   result: null,
@@ -41,6 +51,7 @@ export const useCoach = create((set) => ({
 
     const before = useCatalog.getState().exercises.map((e) => e.id)
     const err = await addExercise({
+      slug: slugify(item.new_exercise.name),
       name: item.new_exercise.name,
       module: 'piernas',
       muscles: item.new_exercise.muscles || [],
