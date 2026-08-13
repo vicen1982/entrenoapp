@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCoach } from '../../store/useCoach'
+import { useCatalog } from '../../store/useCatalog'
 import { DAY_LABELS, todayKey } from '../../store/useRoutinePlan'
 import {
   Sparkles, X, Send, AlertTriangle, Dumbbell, Check,
@@ -13,6 +14,7 @@ const MODE_TABS = [
 
 export default function CoachScreen({ onClose }) {
   const { loading, result, error, ask, clear, saveRoutine, saveAndStartToday, applyAilment } = useCoach()
+  const { exercises: catalogExercises } = useCatalog()
   const [mode, setMode] = useState('rutina')
   const [text, setText] = useState('')
   const [applying, setApplying] = useState(null)
@@ -159,16 +161,39 @@ export default function CoachScreen({ onClose }) {
                     <span className="text-xs text-slate-300 flex-1 truncate">{dayBlock.objetivo}</span>
                   </div>
                   <div className="space-y-1.5">
-                    {(dayBlock.ejercicios || []).map((item, j) => (
-                      <div key={j} className="flex items-center gap-2 p-2 rounded-lg bg-panel-bg border border-panel-border">
-                        <Dumbbell size={11} className="text-neon-green shrink-0" />
-                        <span className="flex-1 min-w-0 text-xs text-slate-300 truncate">
-                          {item.new_exercise?.name ?? 'Ejercicio del catálogo'}
-                          {item.new_exercise && <span className="text-neon-blue ml-1.5 text-[9px] font-mono">NUEVO</span>}
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-500 shrink-0">{item.sets}×{item.reps}</span>
-                      </div>
-                    ))}
+                    {(dayBlock.ejercicios || []).map((item, j) => {
+                      const matched = item.exercise_id ? catalogExercises.find((e) => e.id === item.exercise_id) : null
+                      const name = item.new_exercise?.name ?? matched?.name ?? 'Ejercicio'
+                      return (
+                        <div key={j} className="p-2.5 rounded-lg bg-panel-bg border border-panel-border">
+                          <div className="flex items-center gap-2">
+                            <Dumbbell size={11} className="text-neon-green shrink-0" />
+                            <span className="flex-1 min-w-0 text-xs text-slate-300 truncate">
+                              {name}
+                              {item.new_exercise && <span className="text-neon-blue ml-1.5 text-[9px] font-mono">NUEVO</span>}
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-500 shrink-0">{item.sets}×{item.reps}</span>
+                          </div>
+                          {(item.modulo_tactico || item.peso_sugerido) && (
+                            <div className="flex items-center gap-1.5 flex-wrap mt-1.5 ml-[19px]">
+                              {item.modulo_tactico && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-panel-card border border-panel-border text-slate-500">
+                                  {item.modulo_tactico}
+                                </span>
+                              )}
+                              {item.peso_sugerido && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-panel-card border border-panel-border text-neon-orange">
+                                  {item.peso_sugerido}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {item.notas && (
+                            <p className="text-[10px] text-slate-500 leading-relaxed mt-1.5 ml-[19px]">{item.notas}</p>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )

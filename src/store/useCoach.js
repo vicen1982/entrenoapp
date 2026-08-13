@@ -61,7 +61,16 @@ export const useCoach = create((set) => ({
       const exercises = []
       for (const item of dayBlock.ejercicios || []) {
         const id = await _resolveExercise(item)
-        if (id) exercises.push({ exercise_id: id, sets: item.sets, reps: item.reps })
+        if (id) {
+          exercises.push({
+            exercise_id: id,
+            sets: item.sets,
+            reps: item.reps,
+            modulo_tactico: item.modulo_tactico || null,
+            peso_sugerido: item.peso_sugerido || null,
+            notas: item.notas || null,
+          })
+        }
       }
       days.push({ day: dayBlock.day, objetivo: dayBlock.objetivo, exercises })
     }

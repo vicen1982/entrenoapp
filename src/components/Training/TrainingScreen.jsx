@@ -8,6 +8,7 @@ import ExerciseCard from './ExerciseCard'
 import SessionScreen from './SessionScreen'
 import HistoryScreen from './HistoryScreen'
 import CoachScreen from './CoachScreen'
+import DayDetailModal from './DayDetailModal'
 import exercisesData from '../../data/exercises.json'
 import {
   Activity, AlertTriangle, Zap, Shield, ChevronDown, ChevronUp,
@@ -108,6 +109,7 @@ export default function TrainingScreen() {
   const [view, setView] = useState('hoy')
   const [showCoach, setShowCoach] = useState(false)
   const [startingPlan, setStartingPlan] = useState(false)
+  const [viewingDay, setViewingDay] = useState(null)
 
   useEffect(() => { loadAilments(); loadPlan() }, [])
 
@@ -321,10 +323,11 @@ export default function TrainingScreen() {
               const dayBlock = plan.days.find((d) => d.day === day)
               const hasWork = dayBlock && (dayBlock.exercises || []).length > 0
               return (
-                <div
+                <button
                   key={day}
+                  onClick={() => setViewingDay(day)}
                   title={dayBlock?.objetivo}
-                  className={`text-center p-2 rounded-lg ${
+                  className={`text-center p-2 rounded-lg transition-panel active:scale-95 ${
                     isToday
                       ? `bg-${meta.color}/10 border border-${meta.color}/30`
                       : 'bg-panel-bg border border-panel-border'
@@ -334,7 +337,7 @@ export default function TrainingScreen() {
                     {labels[day]}
                   </div>
                   <div className={`w-1.5 h-1.5 rounded-full mx-auto mt-1 ${hasWork ? 'bg-neon-green' : 'bg-panel-border'}`} />
-                </div>
+                </button>
               )
             })}
           </div>
@@ -342,12 +345,14 @@ export default function TrainingScreen() {
           <div className="grid grid-cols-7 gap-1">
             {Object.entries(exercisesData.weeklySchedule).map(([day, schedule]) => {
               const labels = { monday: 'L', tuesday: 'M', wednesday: 'X', thursday: 'J', friday: 'V', saturday: 'S', sunday: 'D' }
+              const esDay = { monday: 'lunes', tuesday: 'martes', wednesday: 'miercoles', thursday: 'jueves', friday: 'viernes', saturday: 'sabado', sunday: 'domingo' }[day]
               const isToday = day === legacyDayKey
               const hasProtocol = !!schedule.protocolId
               return (
-                <div
+                <button
                   key={day}
-                  className={`text-center p-2 rounded-lg ${
+                  onClick={() => setViewingDay(esDay)}
+                  className={`text-center p-2 rounded-lg transition-panel active:scale-95 ${
                     isToday
                       ? `bg-${meta.color}/10 border border-${meta.color}/30`
                       : 'bg-panel-bg border border-panel-border'
@@ -357,7 +362,7 @@ export default function TrainingScreen() {
                     {labels[day]}
                   </div>
                   <div className={`w-1.5 h-1.5 rounded-full mx-auto mt-1 ${hasProtocol ? 'bg-neon-green' : 'bg-panel-border'}`} />
-                </div>
+                </button>
               )
             })}
           </div>
@@ -367,6 +372,15 @@ export default function TrainingScreen() {
       )}
 
       {showCoach && <CoachScreen onClose={() => { setShowCoach(false); loadAilments(); loadPlan() }} />}
+
+      {viewingDay && (
+        <DayDetailModal
+          day={viewingDay}
+          dayBlock={plan?.days.find((d) => d.day === viewingDay) ?? null}
+          isToday={viewingDay === today}
+          onClose={() => setViewingDay(null)}
+        />
+      )}
     </div>
   )
 }

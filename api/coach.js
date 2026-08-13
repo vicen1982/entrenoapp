@@ -9,16 +9,29 @@ const SYSTEM_PROMPT = `Sos el motor de interpretación de ENGANCHE_OS, una app d
 Recibís: (1) un texto libre del usuario (puede ser una rutina pegada, o el reporte de una dolencia física),
 y (2) el catálogo de ejercicios disponibles en la app (id, nombre, músculos, si tiene carga de sóleo, si es apto para priming).
 
+Las rutinas del usuario suelen venir como una tabla con columnas: Día, Módulo Táctico (un nombre libre puesto por su
+entrenador, ej: "Descompresión", "Pliometría Rotacional", "Armadura Inestable" — NO es el mismo vocabulario que las
+categorías del catálogo), Ejercicio, Volumen/Dinámica (series x reps, o rondas/circuito), Peso Sugerido, y Notas
+Biomecánicas (la explicación técnica de cómo ejecutar el movimiento — esto es CRÍTICO, nunca lo resumas ni lo
+descartes, cópialo casi textual). Algunas filas combinan varios movimientos en un circuito (ej: "Bici Sprint 30s +
+Escalera 30s + Slams 12 reps, 4 Rondas") — tratá esa fila como UN solo ejercicio cuyo nombre describe el circuito
+completo, "sets" = cantidad de rondas, "reps" = un resumen corto de los componentes, y "notas" con el detalle.
+
 Tu trabajo:
 - Si el texto describe una RUTINA: la rutina puede cubrir UN solo día o VARIOS días de la semana (ej: "Lunes: ...,
   Miércoles: ..., Viernes: ..."). Separar el texto por cada día que el usuario mencione explícitamente. Si el texto
   NO menciona días de la semana (es una sola sesión suelta), devolver un único elemento con "day": null.
-  Para cada día: separar cada ejercicio mencionado, matchearlo con el catálogo por nombre/significado (si hay un
-  ejercicio parecido en el catálogo, usar ese "exercise_id"; si no existe, proponerlo como "new_exercise" con nombre,
-  músculos estimados [usando el vocabulario: cuadriceps, isquiotibiales, gluteos, aductores, abductores, gemelos,
-  soleo, core, oblicuos, transverso, lumbar, dorsales, trapecio, romboides, pectoral, deltoides, biceps, triceps,
-  antebrazos, psoas, cardio], series y reps estimadas). Escribir un "objetivo" breve (1 frase) para cada día.
-  Además escribir una "explicacion" general (2-4 frases) del criterio detrás de la distribución semanal completa.
+  Para cada día: separar cada ejercicio/fila mencionado, matchearlo con el catálogo por nombre/significado (si hay
+  un ejercicio parecido en el catálogo, usar ese "exercise_id"; si no existe o es una variante/circuito nuevo,
+  proponerlo como "new_exercise" con nombre, músculos estimados [usando el vocabulario: cuadriceps, isquiotibiales,
+  gluteos, aductores, abductores, gemelos, soleo, core, oblicuos, transverso, lumbar, dorsales, trapecio, romboides,
+  pectoral, deltoides, biceps, triceps, antebrazos, psoas, cardio], series y reps estimadas).
+  Para cada ejercicio incluí también, si el texto los menciona: "modulo_tactico" (el nombre libre de la columna
+  Módulo Táctico), "peso_sugerido" (texto tal cual, ej: "20-24 kg /manc." o "Peso Corporal" o "Cero"), y "notas"
+  (las notas biomecánicas/de ejecución, lo más fiel posible al texto original — nunca vacío si el usuario las dio).
+  Escribir un "objetivo" breve (1 frase) para cada día.
+  Además escribir una "explicacion" general (2-4 frases) del criterio/fundamento detrás de la distribución semanal
+  completa (si el usuario incluyó un párrafo de fundamento o razón de la rutina, resumilo ahí).
 - Si el texto describe una DOLENCIA (dolor, molestia, lesión): identificar la zona/músculos afectados con el mismo
   vocabulario, y listar qué ejercicios del catálogo dado deberían excluirse (por nombre e id) con el motivo, más
   alternativas seguras que sí estén en el catálogo.
@@ -34,7 +47,15 @@ Respondé EXCLUSIVAMENTE con un JSON válido (sin markdown, sin \`\`\`), con est
       "day": "lunes" | "martes" | "miercoles" | "jueves" | "viernes" | "sabado" | "domingo" | null,
       "objetivo": "string",
       "ejercicios": [
-        { "exercise_id": "uuid o null", "new_exercise": null | { "name": "string", "muscles": ["string"], "default_sets": number, "default_reps": "string" }, "sets": number, "reps": "string" }
+        {
+          "exercise_id": "uuid o null",
+          "new_exercise": null | { "name": "string", "muscles": ["string"], "default_sets": number, "default_reps": "string" },
+          "sets": number,
+          "reps": "string",
+          "modulo_tactico": "string o null",
+          "peso_sugerido": "string o null",
+          "notas": "string o null"
+        }
       ]
     }
   ],
