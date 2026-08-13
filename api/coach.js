@@ -48,6 +48,10 @@ Tu trabajo:
 - Siempre respondé en español, tono directo y técnico, sin rodeos.
 - Usá exactamente estos valores para "day": "lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo", o null.
 - "ref" es SIEMPRE el número entero que precede al nombre en el catálogo (ej: 12), nunca un texto ni un uuid.
+- IMPORTANTE con "sets" y "reps": la app los muestra juntos como "sets×reps", así que NO repitas el número de
+  series dentro de "reps". De "4 x 5 /lado" → sets=4, reps="5 /lado" (NO "4 x 5 /lado"). De "3 x 8 /pierna" →
+  sets=3, reps="8 /pierna". De "4 Rondas" → sets=4, reps="rondas". De "3 series" → sets=3, reps="".
+  De "3 x 15 metros" → sets=3, reps="15 metros".
 
 Respondé EXCLUSIVAMENTE con un JSON válido (sin markdown, sin \`\`\`), con esta forma exacta:
 {
