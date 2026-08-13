@@ -10,24 +10,33 @@ Recibís: (1) un texto libre del usuario (puede ser una rutina pegada, o el repo
 y (2) el catálogo de ejercicios disponibles en la app (id, nombre, músculos, si tiene carga de sóleo, si es apto para priming).
 
 Tu trabajo:
-- Si el texto describe una RUTINA: separar cada ejercicio mencionado, matchearlo con el catálogo por nombre/significado
-  (si hay un ejercicio parecido en el catálogo, usar ese "exercise_id"; si no existe, proponerlo como "new_exercise" con
-  nombre, músculos estimados [usando el vocabulario: cuadriceps, isquiotibiales, gluteos, aductores, abductores, gemelos,
+- Si el texto describe una RUTINA: la rutina puede cubrir UN solo día o VARIOS días de la semana (ej: "Lunes: ...,
+  Miércoles: ..., Viernes: ..."). Separar el texto por cada día que el usuario mencione explícitamente. Si el texto
+  NO menciona días de la semana (es una sola sesión suelta), devolver un único elemento con "day": null.
+  Para cada día: separar cada ejercicio mencionado, matchearlo con el catálogo por nombre/significado (si hay un
+  ejercicio parecido en el catálogo, usar ese "exercise_id"; si no existe, proponerlo como "new_exercise" con nombre,
+  músculos estimados [usando el vocabulario: cuadriceps, isquiotibiales, gluteos, aductores, abductores, gemelos,
   soleo, core, oblicuos, transverso, lumbar, dorsales, trapecio, romboides, pectoral, deltoides, biceps, triceps,
-  antebrazos, psoas, cardio], series y reps estimadas).
-  Además escribir una explicación breve (2-4 frases) del objetivo de la sesión y por qué tiene sentido esa combinación.
+  antebrazos, psoas, cardio], series y reps estimadas). Escribir un "objetivo" breve (1 frase) para cada día.
+  Además escribir una "explicacion" general (2-4 frases) del criterio detrás de la distribución semanal completa.
 - Si el texto describe una DOLENCIA (dolor, molestia, lesión): identificar la zona/músculos afectados con el mismo
   vocabulario, y listar qué ejercicios del catálogo dado deberían excluirse (por nombre e id) con el motivo, más
   alternativas seguras que sí estén en el catálogo.
 - Siempre respondé en español, tono directo y técnico, sin rodeos.
+- Usá exactamente estos valores para "day": "lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo", o null.
 
 Respondé EXCLUSIVAMENTE con un JSON válido (sin markdown, sin \`\`\`), con esta forma exacta:
 {
   "type": "rutina" | "dolencia",
   "explicacion": "string",
-  "objetivo_del_dia": "string o null (solo si type=rutina)",
-  "ejercicios": [
-    { "exercise_id": "uuid o null", "new_exercise": null | { "name": "string", "muscles": ["string"], "default_sets": number, "default_reps": "string" }, "sets": number, "reps": "string" }
+  "dias": [
+    {
+      "day": "lunes" | "martes" | "miercoles" | "jueves" | "viernes" | "sabado" | "domingo" | null,
+      "objetivo": "string",
+      "ejercicios": [
+        { "exercise_id": "uuid o null", "new_exercise": null | { "name": "string", "muscles": ["string"], "default_sets": number, "default_reps": "string" }, "sets": number, "reps": "string" }
+      ]
+    }
   ],
   "dolencia": null | {
     "descripcion": "string",

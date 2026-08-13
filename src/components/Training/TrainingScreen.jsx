@@ -3,6 +3,7 @@ import { useStore } from '../../store/useStore'
 import { useCatalog, filterByProtocol } from '../../store/useCatalog'
 import { useSession } from '../../store/useSession'
 import { useAilments, excludedByAilments } from '../../store/useAilments'
+import { useRoutinePlan, dayForToday, todayKey, DAY_ORDER, DAY_LABELS } from '../../store/useRoutinePlan'
 import ExerciseCard from './ExerciseCard'
 import SessionScreen from './SessionScreen'
 import HistoryScreen from './HistoryScreen'
@@ -11,7 +12,7 @@ import exercisesData from '../../data/exercises.json'
 import {
   Activity, AlertTriangle, Zap, Shield, ChevronDown, ChevronUp,
   Dumbbell, Anchor, Flame, ShieldCheck, HeartPulse, Wrench, Database, Play,
-  Sparkles, ShieldAlert, X
+  Sparkles, ShieldAlert, X, CalendarCheck
 } from 'lucide-react'
 
 const PROTOCOL_META = {
@@ -101,11 +102,14 @@ export default function TrainingScreen() {
   const session = useSession((s) => s.session)
   const checking = useSession((s) => s.checking)
   const startSession = useSession((s) => s.start)
+  const addExerciseToSession = useSession((s) => s.addExercise)
   const { ailments, load: loadAilments, resolve: resolveAilment } = useAilments()
+  const { plan, loaded: planLoaded, load: loadPlan, clear: clearPlan } = useRoutinePlan()
   const [view, setView] = useState('hoy')
   const [showCoach, setShowCoach] = useState(false)
+  const [startingPlan, setStartingPlan] = useState(false)
 
-  useEffect(() => { loadAilments() }, [])
+  useEffect(() => { loadAilments(); loadPlan() }, [])
 
   // Sesión activa => modo tracker
   if (session) return <SessionScreen />
@@ -113,12 +117,16 @@ export default function TrainingScreen() {
   const meta = PROTOCOL_META[activeProtocol]
   const Icon = meta.icon
 
+  const today = todayKey()
+  const todayFromPlan = plan ? dayForToday(plan) : null
+
   const weekDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase()
-  const dayKey = {
+  const legacyDayKey = {
     'lunes': 'monday', 'martes': 'tuesday', 'miércoles': 'wednesday',
     'jueves': 'thursday', 'viernes': 'friday', 'sábado': 'saturday', 'domingo': 'sunday'
   }[weekDay] || 'monday'
-  const todaySchedule = exercisesData.weeklySchedule[dayKey]
+  const legacySchedule = exercisesData.weeklySchedule[legacyDayKey]
+  const todayFocus = todayFromPlan?.objetivo || legacySchedule?.focus || 'LIBRE'
 
   const excludedIds = excludedByAilments(ailments)
   const available = filterByProtocol(exercises, activeProtocol, excludedIds)
@@ -186,14 +194,44 @@ export default function TrainingScreen() {
         </div>
       )}
 
+      {/* Plan activo */}
+      {plan && (
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-neon-green/5 border border-neon-green/25">
+          <CalendarCheck size={14} className="text-neon-green shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs text-neon-green font-medium">Plan semanal activo</div>
+            <div className="text-[10px] text-slate-500 truncate">{plan.explicacion}</div>
+          </div>
+          <button onClick={clearPlan} className="p-1.5 text-slate-600 hover:text-neon-orange transition-panel shrink-0">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Iniciar sesión */}
       <button
-        onClick={() => startSession(activeProtocol)}
-        disabled={checking}
+        onClick={async () => {
+          if (todayFromPlan?.exercises?.length > 0) {
+            setStartingPlan(true)
+            await startSession(activeProtocol)
+            for (const { exercise_id } of todayFromPlan.exercises) {
+              const ex = exercises.find((e) => e.id === exercise_id)
+              if (ex) await addExerciseToSession(ex)
+            }
+            setStartingPlan(false)
+          } else {
+            startSession(activeProtocol)
+          }
+        }}
+        disabled={checking || startingPlan}
         className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-neon-green/15 border border-neon-green/40 text-neon-green text-sm font-bold tracking-widest transition-panel glow-green disabled:opacity-50"
       >
         <Play size={16} strokeWidth={2.5} />
-        INICIAR SESIÓN DE ENTRENAMIENTO
+        {startingPlan
+          ? 'ARMANDO SESIÓN DEL PLAN...'
+          : todayFromPlan?.exercises?.length > 0
+            ? 'INICIAR SESIÓN DE HOY (SEGÚN PLAN)'
+            : 'INICIAR SESIÓN DE ENTRENAMIENTO'}
       </button>
 
       {/* Protocol header */}
@@ -208,7 +246,7 @@ export default function TrainingScreen() {
           </div>
           <div className="text-right shrink-0">
             <div className="text-[10px] text-slate-600 tracking-wider">HOY</div>
-            <div className="text-xs text-slate-300 font-medium">{todaySchedule?.focus || 'LIBRE'}</div>
+            <div className="text-xs text-slate-300 font-medium max-w-[140px] truncate">{todayFocus}</div>
           </div>
         </div>
         {meta.alert && (
@@ -272,34 +310,63 @@ export default function TrainingScreen() {
 
       {/* Schedule semanal */}
       <div className="bg-panel-card rounded-2xl p-4 border border-panel-border">
-        <div className="text-xs text-slate-500 tracking-widest mb-3 font-mono">SCHEDULE SEMANAL</div>
-        <div className="grid grid-cols-7 gap-1">
-          {Object.entries(exercisesData.weeklySchedule).map(([day, schedule]) => {
-            const labels = { monday: 'L', tuesday: 'M', wednesday: 'X', thursday: 'J', friday: 'V', saturday: 'S', sunday: 'D' }
-            const isToday = day === dayKey
-            const hasProtocol = !!schedule.protocolId
-            return (
-              <div
-                key={day}
-                className={`text-center p-2 rounded-lg ${
-                  isToday
-                    ? `bg-${meta.color}/10 border border-${meta.color}/30`
-                    : 'bg-panel-bg border border-panel-border'
-                }`}
-              >
-                <div className={`text-xs font-bold ${isToday ? `text-${meta.color}` : 'text-slate-500'}`}>
-                  {labels[day]}
-                </div>
-                <div className={`w-1.5 h-1.5 rounded-full mx-auto mt-1 ${hasProtocol ? 'bg-neon-green' : 'bg-panel-border'}`} />
-              </div>
-            )
-          })}
+        <div className="text-xs text-slate-500 tracking-widest mb-3 font-mono">
+          {plan ? 'SCHEDULE SEMANAL — SEGÚN TU PLAN' : 'SCHEDULE SEMANAL'}
         </div>
+        {plan ? (
+          <div className="grid grid-cols-7 gap-1">
+            {DAY_ORDER.map((day) => {
+              const labels = { lunes: 'L', martes: 'M', miercoles: 'X', jueves: 'J', viernes: 'V', sabado: 'S', domingo: 'D' }
+              const isToday = day === today
+              const dayBlock = plan.days.find((d) => d.day === day)
+              const hasWork = dayBlock && (dayBlock.exercises || []).length > 0
+              return (
+                <div
+                  key={day}
+                  title={dayBlock?.objetivo}
+                  className={`text-center p-2 rounded-lg ${
+                    isToday
+                      ? `bg-${meta.color}/10 border border-${meta.color}/30`
+                      : 'bg-panel-bg border border-panel-border'
+                  }`}
+                >
+                  <div className={`text-xs font-bold ${isToday ? `text-${meta.color}` : 'text-slate-500'}`}>
+                    {labels[day]}
+                  </div>
+                  <div className={`w-1.5 h-1.5 rounded-full mx-auto mt-1 ${hasWork ? 'bg-neon-green' : 'bg-panel-border'}`} />
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="grid grid-cols-7 gap-1">
+            {Object.entries(exercisesData.weeklySchedule).map(([day, schedule]) => {
+              const labels = { monday: 'L', tuesday: 'M', wednesday: 'X', thursday: 'J', friday: 'V', saturday: 'S', sunday: 'D' }
+              const isToday = day === legacyDayKey
+              const hasProtocol = !!schedule.protocolId
+              return (
+                <div
+                  key={day}
+                  className={`text-center p-2 rounded-lg ${
+                    isToday
+                      ? `bg-${meta.color}/10 border border-${meta.color}/30`
+                      : 'bg-panel-bg border border-panel-border'
+                  }`}
+                >
+                  <div className={`text-xs font-bold ${isToday ? `text-${meta.color}` : 'text-slate-500'}`}>
+                    {labels[day]}
+                  </div>
+                  <div className={`w-1.5 h-1.5 rounded-full mx-auto mt-1 ${hasProtocol ? 'bg-neon-green' : 'bg-panel-border'}`} />
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
       </>
       )}
 
-      {showCoach && <CoachScreen onClose={() => { setShowCoach(false); loadAilments() }} />}
+      {showCoach && <CoachScreen onClose={() => { setShowCoach(false); loadAilments(); loadPlan() }} />}
     </div>
   )
 }

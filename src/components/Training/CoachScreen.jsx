@@ -1,23 +1,25 @@
 import { useState } from 'react'
 import { useCoach } from '../../store/useCoach'
+import { DAY_LABELS, todayKey } from '../../store/useRoutinePlan'
 import {
   Sparkles, X, Send, AlertTriangle, Dumbbell, Check,
-  ShieldAlert, ArrowRight, Loader2
+  ShieldAlert, ArrowRight, Loader2, Calendar, CalendarCheck
 } from 'lucide-react'
 
 const MODE_TABS = [
-  { id: 'rutina', label: 'Pegar Rutina', icon: Dumbbell, placeholder: 'Pegá tu rutina y contame por qué la armaste así. Ej: "Lunes: Hip Thrust 4x8, Copenhagen 3x20s porque tengo antecedente de pubalgia y quiero seguir fortaleciendo aductores..."' },
+  { id: 'rutina', label: 'Pegar Rutina', icon: Dumbbell, placeholder: 'Pegá tu rutina completa y contame por qué la armaste así. Si tiene varios días, escribilos: "Lunes: Hip Thrust 4x8, Copenhagen 3x20s. Miércoles: Press inclinado 4x8, Remo 4x8. Viernes: ..." — cada vez que la cambies, volvés a pegarla acá y se actualiza sola.' },
   { id: 'dolencia', label: 'Reportar Dolencia', icon: AlertTriangle, placeholder: 'Contame qué te duele o molesta. Ej: "Hoy me duelen los riñones" o "Tengo tensión en el aductor derecho desde ayer"' },
 ]
 
 export default function CoachScreen({ onClose }) {
-  const { loading, result, error, ask, clear, applyRoutine, applyAilment } = useCoach()
+  const { loading, result, error, ask, clear, saveRoutine, saveAndStartToday, applyAilment } = useCoach()
   const [mode, setMode] = useState('rutina')
   const [text, setText] = useState('')
-  const [applying, setApplying] = useState(false)
-  const [applied, setApplied] = useState(false)
+  const [applying, setApplying] = useState(null)
+  const [applied, setApplied] = useState(null)
 
   const tab = MODE_TABS.find((t) => t.id === mode)
+  const today = todayKey()
 
   const submit = () => {
     if (!text.trim()) return
@@ -25,14 +27,38 @@ export default function CoachScreen({ onClose }) {
     ask(text)
   }
 
-  const apply = async () => {
-    setApplying(true)
-    if (result.type === 'dolencia') await applyAilment(result)
-    else await applyRoutine(result)
-    setApplying(false)
-    setApplied(true)
+  const doSaveOnly = async () => {
+    setApplying('plan')
+    await saveRoutine(result)
+    setApplying(null)
+    setApplied('plan')
     setTimeout(onClose, 900)
   }
+
+  const doSaveAndStart = async () => {
+    setApplying('today')
+    const started = await saveAndStartToday(result)
+    setApplying(null)
+    if (started) {
+      setApplied('today')
+      setTimeout(onClose, 700)
+    } else {
+      setApplied('plan')
+      setTimeout(onClose, 900)
+    }
+  }
+
+  const apply = async () => {
+    setApplying('ailment')
+    await applyAilment(result)
+    setApplying(null)
+    setApplied('ailment')
+    setTimeout(onClose, 900)
+  }
+
+  const days = result?.dias || []
+  const hasTodayBlock = days.some((d) => d.day === today && (d.ejercicios || []).length > 0)
+  const isMultiDay = days.filter((d) => d.day !== null).length > 1
 
   return (
     <div className="fixed inset-0 z-50 bg-panel-bg/97 backdrop-blur-sm overflow-y-auto">
@@ -53,7 +79,7 @@ export default function CoachScreen({ onClose }) {
           {MODE_TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => { setMode(id); clear(); setApplied(false) }}
+              onClick={() => { setMode(id); clear(); setApplied(null) }}
               className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-xs font-bold tracking-wide transition-panel ${
                 mode === id
                   ? 'bg-neon-blue/10 border-neon-blue/40 text-neon-blue'
@@ -101,52 +127,88 @@ export default function CoachScreen({ onClose }) {
           </div>
         )}
 
-        {/* Resultado — RUTINA */}
+        {/* Resultado — RUTINA (uno o varios días) */}
         {result && result.type === 'rutina' && (
           <div className="space-y-3">
             <div className="bg-panel-card rounded-2xl border panel-border-blue p-4 glow-blue">
-              <div className="text-[10px] text-neon-blue tracking-widest font-mono mb-2">QUÉ BUSCAMOS HOY</div>
-              {result.objetivo_del_dia && (
-                <div className="text-sm font-bold text-slate-200 mb-2">{result.objetivo_del_dia}</div>
-              )}
+              <div className="text-[10px] text-neon-blue tracking-widest font-mono mb-2">
+                {isMultiDay ? 'CRITERIO DEL PLAN SEMANAL' : 'QUÉ BUSCAMOS HOY'}
+              </div>
               <p className="text-xs text-slate-400 leading-relaxed">{result.explicacion}</p>
             </div>
 
-            <div className="bg-panel-card rounded-2xl border border-panel-border p-4">
-              <div className="text-[10px] text-slate-500 tracking-widest font-mono mb-3">
-                EJERCICIOS INTERPRETADOS ({(result.ejercicios || []).length})
-              </div>
-              <div className="space-y-2">
-                {(result.ejercicios || []).map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl bg-panel-bg border border-panel-border">
-                    <Dumbbell size={13} className="text-neon-green shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm text-slate-200 truncate">
-                        {item.new_exercise?.name || item.exercise_id ? (item.new_exercise?.name ?? 'Ejercicio del catálogo') : '—'}
-                      </div>
-                      {item.new_exercise && (
-                        <div className="text-[9px] text-neon-blue font-mono">NUEVO EN CATÁLOGO</div>
-                      )}
-                    </div>
-                    <span className="text-xs font-mono text-slate-500 shrink-0">{item.sets}×{item.reps}</span>
+            {days.map((dayBlock, i) => {
+              const isToday = dayBlock.day === today
+              return (
+                <div
+                  key={i}
+                  className={`bg-panel-card rounded-2xl border p-4 ${isToday ? 'panel-border-green' : 'border-panel-border'}`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {dayBlock.day ? (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono tracking-widest ${
+                        isToday ? 'border-neon-green/40 bg-neon-green/10 text-neon-green' : 'border-panel-border text-slate-500'
+                      }`}>
+                        {DAY_LABELS[dayBlock.day]}{isToday ? ' · HOY' : ''}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-neon-green/40 bg-neon-green/10 text-neon-green font-mono tracking-widest">
+                        SESIÓN
+                      </span>
+                    )}
+                    <span className="text-xs text-slate-300 flex-1 truncate">{dayBlock.objetivo}</span>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="space-y-1.5">
+                    {(dayBlock.ejercicios || []).map((item, j) => (
+                      <div key={j} className="flex items-center gap-2 p-2 rounded-lg bg-panel-bg border border-panel-border">
+                        <Dumbbell size={11} className="text-neon-green shrink-0" />
+                        <span className="flex-1 min-w-0 text-xs text-slate-300 truncate">
+                          {item.new_exercise?.name ?? 'Ejercicio del catálogo'}
+                          {item.new_exercise && <span className="text-neon-blue ml-1.5 text-[9px] font-mono">NUEVO</span>}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-500 shrink-0">{item.sets}×{item.reps}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
 
-            <button
-              onClick={apply}
-              disabled={applying || applied}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-neon-green/15 border border-neon-green/40 text-neon-green text-sm font-bold tracking-wide transition-panel disabled:opacity-60"
-            >
-              {applied ? (
-                <><Check size={16} /> SESIÓN CREADA</>
-              ) : applying ? (
-                <><Loader2 size={16} className="animate-spin" /> ARMANDO SESIÓN...</>
-              ) : (
-                <><ArrowRight size={16} /> INICIAR ESTA SESIÓN</>
+            <div className="grid grid-cols-1 gap-2">
+              {hasTodayBlock && (
+                <button
+                  onClick={doSaveAndStart}
+                  disabled={!!applying || !!applied}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-neon-green/15 border border-neon-green/40 text-neon-green text-sm font-bold tracking-wide transition-panel disabled:opacity-60"
+                >
+                  {applied === 'today' ? (
+                    <><Check size={16} /> SESIÓN DE HOY INICIADA</>
+                  ) : applying === 'today' ? (
+                    <><Loader2 size={16} className="animate-spin" /> ARMANDO SESIÓN...</>
+                  ) : (
+                    <><ArrowRight size={16} /> GUARDAR PLAN Y EMPEZAR HOY</>
+                  )}
+                </button>
               )}
-            </button>
+              <button
+                onClick={doSaveOnly}
+                disabled={!!applying || !!applied}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-panel-card border border-panel-border text-slate-300 text-sm font-semibold tracking-wide transition-panel disabled:opacity-60"
+              >
+                {applied === 'plan' ? (
+                  <><CalendarCheck size={15} /> PLAN GUARDADO</>
+                ) : applying === 'plan' ? (
+                  <><Loader2 size={15} className="animate-spin" /> GUARDANDO...</>
+                ) : (
+                  <><Calendar size={15} /> {hasTodayBlock ? 'SOLO GUARDAR EL PLAN' : 'GUARDAR PLAN SEMANAL'}</>
+                )}
+              </button>
+              {!hasTodayBlock && isMultiDay && (
+                <p className="text-[10px] text-slate-600 text-center">
+                  Hoy ({DAY_LABELS[today]}) no tiene sesión en este plan — se guarda para el resto de la semana
+                </p>
+              )}
+            </div>
           </div>
         )}
 
@@ -198,12 +260,12 @@ export default function CoachScreen({ onClose }) {
 
             <button
               onClick={apply}
-              disabled={applying || applied}
+              disabled={!!applying || !!applied}
               className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-neon-orange/15 border border-neon-orange/40 text-neon-orange text-sm font-bold tracking-wide transition-panel disabled:opacity-60"
             >
-              {applied ? (
+              {applied === 'ailment' ? (
                 <><Check size={16} /> RESTRICCIÓN ACTIVADA</>
-              ) : applying ? (
+              ) : applying === 'ailment' ? (
                 <><Loader2 size={16} className="animate-spin" /> GUARDANDO...</>
               ) : (
                 <><ShieldAlert size={16} /> ACTIVAR RESTRICCIÓN</>
