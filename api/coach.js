@@ -3,7 +3,11 @@
 // y lo estructura contra el catálogo de ejercicios existente.
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
+// El 70b interpreta mejor las rutinas, pero el tier gratuito lo corta a 100k
+// tokens/día. El 8b tiene una cuota diaria mucho más alta y separada, así que
+// sirve de respaldo para no dejar al usuario sin poder cargar su rutina.
 const GROQ_MODEL = 'llama-3.3-70b-versatile'
+const GROQ_FALLBACK_MODEL = 'llama-3.1-8b-instant'
 
 // Una rutina semanal larga puede tardar ~10s en generarse, y el reintento por
 // rate limit suma unos segundos más: sin esto Vercel cortaría con un 502 vacío.
@@ -100,7 +104,7 @@ export default async function handler(req, res) {
 
   const userPrompt = `CATÁLOGO DISPONIBLE:\n${catalogSummary}\n\nTEXTO DEL USUARIO:\n${text.trim()}`
 
-  const callGroq = () =>
+  const callGroq = (model) =>
     fetch(GROQ_URL, {
       method: 'POST',
       headers: {
@@ -108,7 +112,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model,
         temperature: 0.4,
         // Groq reserva max_tokens contra el límite de 12k tokens/minuto del tier
         // gratuito, así que pedir de más hacía fallar la request entera. Una
@@ -123,18 +127,30 @@ export default async function handler(req, res) {
     })
 
   try {
-    // Sin reintento automático a propósito: el límite del tier gratuito es por
-    // tokens/minuto, así que cada reintento consume cuota y agrava el problema
-    // en vez de resolverlo. Se informa al usuario y él decide reintentar.
+    // No se reintenta con el mismo modelo: el límite es por tokens consumidos,
+    // así que insistir sólo gasta más cuota. Si el 70b está agotado se pasa al
+    // 8b, que tiene su propia cuota, antes de dar el error al usuario.
     const isQuota = (s) => s === 429 || s === 413
-    const groqRes = await callGroq()
+    let groqRes = await callGroq(GROQ_MODEL)
+    let usedFallback = false
+    if (isQuota(groqRes.status)) {
+      groqRes = await callGroq(GROQ_FALLBACK_MODEL)
+      usedFallback = true
+    }
 
     if (!groqRes.ok) {
       const errText = await groqRes.text()
-      const quota = isQuota(groqRes.status) || /tokens per minute|too large|rate.?limit/i.test(errText)
+      const quota = isQuota(groqRes.status) || /tokens per|too large|rate.?limit/i.test(errText)
+      // Groq indica cuánto falta ("Please try again in 16m47s"): se lo pasamos
+      // al usuario para que no reintente a ciegas.
+      const wait = errText.match(/try again in ([0-9hms.]+)/i)?.[1] ?? null
       res
         .status(quota ? 429 : 502)
-        .json({ error: quota ? 'rate_limited' : 'groq_error', detail: errText.slice(0, 500) })
+        .json({
+          error: quota ? 'rate_limited' : 'groq_error',
+          retry_after: wait,
+          detail: errText.slice(0, 500),
+        })
       return
     }
 

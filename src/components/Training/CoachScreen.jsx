@@ -13,7 +13,7 @@ const MODE_TABS = [
 ]
 
 export default function CoachScreen({ onClose }) {
-  const { loading, result, error, ask, clear, saveRoutine, saveAndStartToday, applyAilment } = useCoach()
+  const { loading, result, error, retryAfter, ask, clear, saveRoutine, saveAndStartToday, applyAilment } = useCoach()
   const { exercises: catalogExercises } = useCatalog()
   const [mode, setMode] = useState('rutina')
   const [text, setText] = useState('')
@@ -125,7 +125,7 @@ export default function CoachScreen({ onClose }) {
               {error === 'missing_api_key'
                 ? 'El motor de IA no está configurado todavía (falta la API key en el servidor).'
                 : error === 'rate_limited'
-                ? 'El motor de IA está saturado por el límite gratuito. Esperá ~1 minuto y reintentá — tu texto quedó guardado.'
+                ? `Se agotó la cuota gratuita del motor de IA${retryAfter ? ` — se libera en ${retryAfter}` : ''}. Tu texto quedó guardado, reintentá más tarde.`
                 : error === 'invalid_json'
                 ? 'La rutina es muy larga y la respuesta se cortó. Probá pegarla en dos partes (ej: primero Lunes y Miércoles, después Viernes).'
                 : 'No se pudo procesar. Reintentá en unos segundos.'}

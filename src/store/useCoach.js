@@ -18,10 +18,11 @@ export const useCoach = create((set) => ({
   loading: false,
   result: null,
   error: null,
+  retryAfter: null,
   lastText: '',
 
   ask: async (text) => {
-    set({ loading: true, error: null, result: null, lastText: text })
+    set({ loading: true, error: null, retryAfter: null, result: null, lastText: text })
     const { exercises } = useCatalog.getState()
 
     try {
@@ -32,7 +33,7 @@ export const useCoach = create((set) => ({
       })
       const data = await res.json()
       if (!res.ok) {
-        set({ loading: false, error: data.error || 'error_desconocido' })
+        set({ loading: false, error: data.error || 'error_desconocido', retryAfter: data.retry_after || null })
         return
       }
       set({ loading: false, result: data })
