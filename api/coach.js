@@ -14,8 +14,10 @@ entrenador, ej: "Descompresión", "Pliometría Rotacional", "Armadura Inestable"
 categorías del catálogo), Ejercicio, Volumen/Dinámica (series x reps, o rondas/circuito), Peso Sugerido, y Notas
 Biomecánicas (la explicación técnica de cómo ejecutar el movimiento — esto es CRÍTICO, nunca lo resumas ni lo
 descartes, cópialo casi textual). Algunas filas combinan varios movimientos en un circuito (ej: "Bici Sprint 30s +
-Escalera 30s + Slams 12 reps, 4 Rondas") — tratá esa fila como UN solo ejercicio cuyo nombre describe el circuito
-completo, "sets" = cantidad de rondas, "reps" = un resumen corto de los componentes, y "notas" con el detalle.
+Escalera 30s + Slams 12 reps, 4 Rondas") — esa fila completa es SIEMPRE UN SOLO elemento del array "ejercicios"
+(NUNCA la separes en varios ítems), con "new_exercise.name" describiendo el circuito entero (ej: "Circuito: Bici +
+Escalera + Slams"), "sets" = cantidad de rondas, "reps" = "circuito" o un resumen cortísimo, y "notas" con el
+desglose completo de los componentes y sus tiempos/reps individuales.
 
 Tu trabajo:
 - Si el texto describe una RUTINA: la rutina puede cubrir UN solo día o VARIOS días de la semana (ej: "Lunes: ...,
