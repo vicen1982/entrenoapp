@@ -28,7 +28,7 @@ Tu trabajo:
   Miércoles: ..., Viernes: ..."). Separar el texto por cada día que el usuario mencione explícitamente. Si el texto
   NO menciona días de la semana (es una sola sesión suelta), devolver un único elemento con "day": null.
   Para cada día: separar cada ejercicio/fila mencionado, matchearlo con el catálogo por nombre/significado (si hay
-  un ejercicio parecido en el catálogo, usar ese "exercise_id"; si no existe o es una variante/circuito nuevo,
+  un ejercicio parecido en el catálogo, usar su NÚMERO de índice en "ref"; si no existe o es una variante/circuito nuevo,
   proponerlo como "new_exercise" con nombre, músculos estimados [usando el vocabulario: cuadriceps, isquiotibiales,
   gluteos, aductores, abductores, gemelos, soleo, core, oblicuos, transverso, lumbar, dorsales, trapecio, romboides,
   pectoral, deltoides, biceps, triceps, antebrazos, psoas, cardio], series y reps estimadas).
@@ -39,10 +39,11 @@ Tu trabajo:
   Además escribir una "explicacion" general (2-4 frases) del criterio/fundamento detrás de la distribución semanal
   completa (si el usuario incluyó un párrafo de fundamento o razón de la rutina, resumilo ahí).
 - Si el texto describe una DOLENCIA (dolor, molestia, lesión): identificar la zona/músculos afectados con el mismo
-  vocabulario, y listar qué ejercicios del catálogo dado deberían excluirse (por nombre e id) con el motivo, más
-  alternativas seguras que sí estén en el catálogo.
+  vocabulario, y listar qué ejercicios del catálogo dado deberían excluirse (por nombre y número de índice en "ref")
+  con el motivo, más alternativas seguras que sí estén en el catálogo.
 - Siempre respondé en español, tono directo y técnico, sin rodeos.
 - Usá exactamente estos valores para "day": "lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo", o null.
+- "ref" es SIEMPRE el número entero que precede al nombre en el catálogo (ej: 12), nunca un texto ni un uuid.
 
 Respondé EXCLUSIVAMENTE con un JSON válido (sin markdown, sin \`\`\`), con esta forma exacta:
 {
@@ -54,7 +55,7 @@ Respondé EXCLUSIVAMENTE con un JSON válido (sin markdown, sin \`\`\`), con est
       "objetivo": "string",
       "ejercicios": [
         {
-          "exercise_id": "uuid o null",
+          "ref": number | null,
           "new_exercise": null | { "name": "string", "muscles": ["string"], "default_sets": number, "default_reps": "string" },
           "sets": number,
           "reps": "string",
@@ -68,8 +69,8 @@ Respondé EXCLUSIVAMENTE con un JSON válido (sin markdown, sin \`\`\`), con est
   "dolencia": null | {
     "descripcion": "string",
     "muscles_affected": ["string"],
-    "exclusions": [ { "exercise_id": "string", "name": "string", "motivo": "string" } ],
-    "alternativas": [ { "exercise_id": "string", "name": "string", "motivo": "string" } ]
+    "exclusions": [ { "ref": number, "name": "string", "motivo": "string" } ],
+    "alternativas": [ { "ref": number, "name": "string", "motivo": "string" } ]
   }
 }`
 
@@ -91,9 +92,11 @@ export default async function handler(req, res) {
     return
   }
 
-  // Solo id + nombre: alcanza para el matching y reduce ~5x los tokens de entrada
-  // (clave para no agotar el límite por minuto del tier gratuito de Groq).
-  const catalogSummary = (catalog || []).map((e) => `${e.id}::${e.name}`).join('\n')
+  // Se numera el catálogo en vez de mandar UUIDs: cada UUID cuesta ~12 tokens y
+  // son 57 ejercicios, así que el índice ahorra ~700 tokens de entrada por
+  // request — decisivo contra el límite de 12k tokens/minuto del tier gratuito.
+  const list = catalog || []
+  const catalogSummary = list.map((e, i) => `${i}::${e.name}`).join('\n')
 
   const userPrompt = `CATÁLOGO DISPONIBLE:\n${catalogSummary}\n\nTEXTO DEL USUARIO:\n${text.trim()}`
 
@@ -109,8 +112,8 @@ export default async function handler(req, res) {
         temperature: 0.4,
         // Groq reserva max_tokens contra el límite de 12k tokens/minuto del tier
         // gratuito, así que pedir de más hacía fallar la request entera. Una
-        // rutina de 3 días ocupa ~1.2k tokens: 4000 deja margen de sobra.
-        max_tokens: 4000,
+        // rutina de 3 días ocupa ~1.2k tokens: 3000 deja margen de sobra.
+        max_tokens: 3000,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
@@ -152,6 +155,27 @@ export default async function handler(req, res) {
     } catch {
       res.status(502).json({ error: 'invalid_json', raw: raw.slice(0, 500) })
       return
+    }
+
+    // Traducimos los índices del catálogo de vuelta a UUIDs para que el resto de
+    // la app siga trabajando con exercise_id como siempre.
+    const uuidOf = (ref) => {
+      const i = typeof ref === 'number' ? ref : parseInt(ref, 10)
+      return Number.isInteger(i) && list[i] ? list[i].id : null
+    }
+    for (const dia of parsed.dias || []) {
+      for (const ej of dia.ejercicios || []) {
+        ej.exercise_id = ej.ref === null || ej.ref === undefined ? null : uuidOf(ej.ref)
+        delete ej.ref
+      }
+    }
+    if (parsed.dolencia) {
+      for (const key of ['exclusions', 'alternativas']) {
+        for (const item of parsed.dolencia[key] || []) {
+          item.exercise_id = uuidOf(item.ref)
+          delete item.ref
+        }
+      }
     }
 
     res.status(200).json(parsed)
