@@ -123,15 +123,11 @@ export default async function handler(req, res) {
     })
 
   try {
-    // El tier gratuito limita tokens por minuto. Groq responde 429 cuando ya
-    // consumiste la cuota y 413 cuando la request sola no entra en ella; ambos
-    // se resuelven esperando, así que reintentamos en los dos casos.
+    // Sin reintento automático a propósito: el límite del tier gratuito es por
+    // tokens/minuto, así que cada reintento consume cuota y agrava el problema
+    // en vez de resolverlo. Se informa al usuario y él decide reintentar.
     const isQuota = (s) => s === 429 || s === 413
-    let groqRes = await callGroq()
-    for (let attempt = 0; attempt < 2 && isQuota(groqRes.status); attempt++) {
-      await new Promise((r) => setTimeout(r, 4000 * (attempt + 1)))
-      groqRes = await callGroq()
-    }
+    const groqRes = await callGroq()
 
     if (!groqRes.ok) {
       const errText = await groqRes.text()
