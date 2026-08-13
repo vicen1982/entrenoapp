@@ -87,14 +87,14 @@ export default async function handler(req, res) {
     return
   }
 
-  const catalogSummary = (catalog || [])
-    .map((e) => `${e.id}::${e.name}::[${(e.muscles || []).join(',')}]::soleo=${e.soleo_load}::priming=${e.priming_ok}`)
-    .join('\n')
+  // Solo id + nombre: alcanza para el matching y reduce ~5x los tokens de entrada
+  // (clave para no agotar el límite por minuto del tier gratuito de Groq).
+  const catalogSummary = (catalog || []).map((e) => `${e.id}::${e.name}`).join('\n')
 
   const userPrompt = `CATÁLOGO DISPONIBLE:\n${catalogSummary}\n\nTEXTO DEL USUARIO:\n${text.trim()}`
 
-  try {
-    const groqRes = await fetch(GROQ_URL, {
+  const callGroq = () =>
+    fetch(GROQ_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -103,6 +103,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: GROQ_MODEL,
         temperature: 0.4,
+        max_tokens: 8000,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
@@ -111,9 +112,18 @@ export default async function handler(req, res) {
       }),
     })
 
+  try {
+    // El tier gratuito limita tokens por minuto: ante 429 esperamos y reintentamos.
+    let groqRes = await callGroq()
+    for (let attempt = 0; attempt < 2 && groqRes.status === 429; attempt++) {
+      await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)))
+      groqRes = await callGroq()
+    }
+
     if (!groqRes.ok) {
       const errText = await groqRes.text()
-      res.status(502).json({ error: 'groq_error', detail: errText.slice(0, 500) })
+      const code = groqRes.status === 429 ? 'rate_limited' : 'groq_error'
+      res.status(groqRes.status === 429 ? 429 : 502).json({ error: code, detail: errText.slice(0, 500) })
       return
     }
 

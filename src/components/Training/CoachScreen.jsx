@@ -120,12 +120,23 @@ export default function CoachScreen({ onClose }) {
 
         {/* Error */}
         {error && (
-          <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-center">
+          <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-center space-y-3">
             <p className="text-xs text-red-400">
               {error === 'missing_api_key'
                 ? 'El motor de IA no está configurado todavía (falta la API key en el servidor).'
-                : 'No se pudo procesar. Intentá de nuevo en unos segundos.'}
+                : error === 'rate_limited'
+                ? 'El motor de IA está saturado por el límite gratuito. Esperá ~1 minuto y reintentá — tu texto quedó guardado.'
+                : error === 'invalid_json'
+                ? 'La rutina es muy larga y la respuesta se cortó. Probá pegarla en dos partes (ej: primero Lunes y Miércoles, después Viernes).'
+                : 'No se pudo procesar. Reintentá en unos segundos.'}
             </p>
+            <button
+              onClick={submit}
+              disabled={loading}
+              className="w-full py-2.5 rounded-xl bg-panel-card border border-panel-border text-slate-300 text-xs font-semibold tracking-wide transition-panel disabled:opacity-50"
+            >
+              {loading ? 'REINTENTANDO...' : 'REINTENTAR'}
+            </button>
           </div>
         )}
 
