@@ -107,7 +107,10 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: GROQ_MODEL,
         temperature: 0.4,
-        max_tokens: 8000,
+        // Groq reserva max_tokens contra el límite de 12k tokens/minuto del tier
+        // gratuito, así que pedir de más hacía fallar la request entera. Una
+        // rutina de 3 días ocupa ~1.2k tokens: 4000 deja margen de sobra.
+        max_tokens: 4000,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
@@ -117,17 +120,22 @@ export default async function handler(req, res) {
     })
 
   try {
-    // El tier gratuito limita tokens por minuto: ante 429 esperamos y reintentamos.
+    // El tier gratuito limita tokens por minuto. Groq responde 429 cuando ya
+    // consumiste la cuota y 413 cuando la request sola no entra en ella; ambos
+    // se resuelven esperando, así que reintentamos en los dos casos.
+    const isQuota = (s) => s === 429 || s === 413
     let groqRes = await callGroq()
-    for (let attempt = 0; attempt < 2 && groqRes.status === 429; attempt++) {
-      await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)))
+    for (let attempt = 0; attempt < 2 && isQuota(groqRes.status); attempt++) {
+      await new Promise((r) => setTimeout(r, 4000 * (attempt + 1)))
       groqRes = await callGroq()
     }
 
     if (!groqRes.ok) {
       const errText = await groqRes.text()
-      const code = groqRes.status === 429 ? 'rate_limited' : 'groq_error'
-      res.status(groqRes.status === 429 ? 429 : 502).json({ error: code, detail: errText.slice(0, 500) })
+      const quota = isQuota(groqRes.status) || /tokens per minute|too large|rate.?limit/i.test(errText)
+      res
+        .status(quota ? 429 : 502)
+        .json({ error: quota ? 'rate_limited' : 'groq_error', detail: errText.slice(0, 500) })
       return
     }
 
