@@ -175,7 +175,15 @@ export default async function handler(req, res) {
       const i = typeof ref === 'number' ? ref : parseInt(ref, 10)
       return Number.isInteger(i) && list[i] ? list[i].id : null
     }
+    // El modelo a veces devuelve "miércoles"/"sábado" con tilde; el resto de la
+    // app compara contra claves sin tilde, así que normalizamos acá.
+    const normalizeDay = (d) =>
+      typeof d === 'string'
+        ? d.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
+        : d
+
     for (const dia of parsed.dias || []) {
+      dia.day = normalizeDay(dia.day)
       for (const ej of dia.ejercicios || []) {
         ej.exercise_id = ej.ref === null || ej.ref === undefined ? null : uuidOf(ej.ref)
         delete ej.ref
