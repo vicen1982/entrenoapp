@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Clock, AlertCircle, Shield, Timer } from 'lucide-react'
 import MuscleThumb from './MuscleThumb'
+import MovementDemo from './MovementDemo'
 
 const PRIORITY_CONFIG = {
   critica: { label: 'CRÍTICO', cls: 'bg-red-500/10 border-red-500/30 text-red-400' },
@@ -50,6 +51,17 @@ export default function ExerciseCard({ exercise, accentColor = 'neon-green' }) {
 
       {expanded && (
         <div className="px-3 pb-3 border-t border-panel-border pt-3 space-y-3">
+          {/* Anatomía + ejecución */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col items-center gap-1.5">
+              <MuscleThumb muscles={exercise.muscles} size={104} zoom={false} />
+              <span className="text-[9px] text-slate-500 tracking-widest font-mono">MÚSCULOS</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <MovementDemo exercise={exercise} size={104} />
+            </div>
+          </div>
+
           {exercise.rest_seconds > 0 && (
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <Clock size={11} />

@@ -1,10 +1,13 @@
+import { useState } from 'react'
 import { useCatalog } from '../../store/useCatalog'
 import { DAY_LABELS } from '../../store/useRoutinePlan'
 import MuscleThumb from './MuscleThumb'
+import ExerciseDetailModal from './ExerciseDetailModal'
 import { X, CalendarX2 } from 'lucide-react'
 
 export default function DayDetailModal({ day, dayBlock, isToday, onClose }) {
   const { exercises: catalogExercises } = useCatalog()
+  const [detail, setDetail] = useState(null)
 
   return (
     <div className="fixed inset-0 z-50 bg-panel-bg/97 backdrop-blur-sm overflow-y-auto">
@@ -46,11 +49,14 @@ export default function DayDetailModal({ day, dayBlock, isToday, onClose }) {
                 const ex = catalogExercises.find((e) => e.id === item.exercise_id)
                 return (
                   <div key={i} className="bg-panel-card rounded-2xl border border-panel-border p-3.5">
-                    <div className="flex items-center gap-2.5">
+                    <button
+                      onClick={() => ex && setDetail({ exercise: ex, planItem: item })}
+                      className="w-full flex items-center gap-2.5 text-left"
+                    >
                       <MuscleThumb muscles={ex?.muscles} size={52} />
                       <span className="flex-1 min-w-0 text-sm text-slate-200 truncate">{ex?.name ?? '—'}</span>
                       <span className="text-xs font-mono text-neon-green shrink-0">{item.sets}×{item.reps}</span>
-                    </div>
+                    </button>
                     {(item.modulo_tactico || item.peso_sugerido) && (
                       <div className="flex items-center gap-1.5 flex-wrap mt-2 ml-[62px]">
                         {item.modulo_tactico && (
@@ -75,6 +81,14 @@ export default function DayDetailModal({ day, dayBlock, isToday, onClose }) {
           </div>
         )}
       </div>
+
+      {detail && (
+        <ExerciseDetailModal
+          exercise={detail.exercise}
+          planItem={detail.planItem}
+          onClose={() => setDetail(null)}
+        />
+      )}
     </div>
   )
 }

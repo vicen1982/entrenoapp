@@ -41,11 +41,11 @@ function renderShape(shape, key, active, glowId) {
   return <rect key={key} x={shape.x} y={shape.y} width={shape.w} height={shape.h} rx={shape.rx} {...common} />
 }
 
-export default function MuscleThumb({ muscles = [], size = 52 }) {
+export default function MuscleThumb({ muscles = [], size = 52, zoom = true, view: forcedView, className = '' }) {
   const set = new Set(muscles)
   const isDeepOnly = muscles.length > 0 && muscles.every((m) => DEEP_MUSCLES.includes(m))
 
-  if (muscles.length === 0 || isDeepOnly) {
+  if ((muscles.length === 0 || isDeepOnly) && zoom) {
     return (
       <div
         className="shrink-0 rounded-xl bg-panel-bg border border-panel-border flex items-center justify-center"
@@ -58,7 +58,7 @@ export default function MuscleThumb({ muscles = [], size = 52 }) {
 
   const frontCount = MUSCLE_VIEWS.front.filter((s) => set.has(s.muscle)).length
   const backCount = MUSCLE_VIEWS.back.filter((s) => set.has(s.muscle)).length
-  const view = backCount > frontCount ? 'back' : 'front'
+  const view = forcedView ?? (backCount > frontCount ? 'back' : 'front')
   const shapes = MUSCLE_VIEWS[view]
 
   // Bounding box de los músculos activos (+ su mitad espejada) para hacer zoom
@@ -73,7 +73,7 @@ export default function MuscleThumb({ muscles = [], size = 52 }) {
   const PAD = 26
   const MIN_SPAN = 70
   let vb
-  if (boxes.length === 0) {
+  if (!zoom || boxes.length === 0) {
     vb = { x: 30, y: 20, w: 140, h: 340 } // fallback: cuerpo entero
   } else {
     let x1 = Math.min(...boxes.map((b) => b.x1)) - PAD
@@ -91,8 +91,12 @@ export default function MuscleThumb({ muscles = [], size = 52 }) {
 
   return (
     <div
-      className="shrink-0 rounded-xl border border-neon-orange/25 overflow-hidden relative"
-      style={{ width: size, height: size, background: 'radial-gradient(circle at 50% 40%, #1a1420 0%, #0b0f17 75%)' }}
+      className={`shrink-0 rounded-xl border border-neon-orange/25 overflow-hidden relative ${className}`}
+      style={{
+        width: size,
+        height: zoom ? size : size * 1.9,
+        background: 'radial-gradient(circle at 50% 40%, #1a1420 0%, #0b0f17 75%)',
+      }}
     >
       <svg viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} className="w-full h-full">
         <defs>

@@ -3,6 +3,7 @@ import { useSession } from '../../store/useSession'
 import { useCatalog, filterByProtocol } from '../../store/useCatalog'
 import { useAilments, excludedByAilments } from '../../store/useAilments'
 import MuscleThumb from './MuscleThumb'
+import ExerciseDetailModal from './ExerciseDetailModal'
 import {
   Play, Square, Plus, X, Check, Timer, Search,
   ChevronDown, ChevronUp, Trash2, Flag
@@ -135,20 +136,23 @@ function SetRow({ log, isTime, onComplete, onUncomplete, onUpdate }) {
 /* ---------- Card de ejercicio en sesión ---------- */
 function SessionExercise({ exercise, logs, onCompleteSet, onUncompleteSet, onUpdateSet, onAddSet, onRemove }) {
   const [confirmRemove, setConfirmRemove] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
   const isTime = exercise.measure_type === 'seconds'
   const done = logs.filter((l) => l.completed).length
 
   return (
     <div className="bg-panel-card rounded-2xl border border-panel-border p-3">
       <div className="flex items-center gap-2 mb-3">
-        <MuscleThumb muscles={exercise.muscles} size={48} />
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold text-slate-200 truncate">{exercise.name}</div>
-          <div className="text-[10px] text-slate-600 font-mono">
-            {done}/{logs.length} SERIES · descanso {exercise.rest_seconds}s
-            {exercise.tempo ? ` · ${exercise.tempo}` : ''}
+        <button onClick={() => setShowDetail(true)} className="flex items-center gap-2 flex-1 min-w-0 text-left">
+          <MuscleThumb muscles={exercise.muscles} size={48} />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-slate-200 truncate">{exercise.name}</div>
+            <div className="text-[10px] text-slate-600 font-mono">
+              {done}/{logs.length} SERIES · descanso {exercise.rest_seconds}s
+              {exercise.tempo ? ` · ${exercise.tempo}` : ''}
+            </div>
           </div>
-        </div>
+        </button>
         {confirmRemove ? (
           <div className="flex gap-1.5 shrink-0">
             <button onClick={onRemove} className="text-[10px] px-2 py-1.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-400 font-bold">QUITAR</button>
@@ -180,6 +184,10 @@ function SessionExercise({ exercise, logs, onCompleteSet, onUncompleteSet, onUpd
       >
         + Serie
       </button>
+
+      {showDetail && (
+        <ExerciseDetailModal exercise={exercise} onClose={() => setShowDetail(false)} />
+      )}
     </div>
   )
 }
