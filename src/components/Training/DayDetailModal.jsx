@@ -1,6 +1,7 @@
 import { useCatalog } from '../../store/useCatalog'
 import { DAY_LABELS } from '../../store/useRoutinePlan'
-import { X, Dumbbell, CalendarX2 } from 'lucide-react'
+import MuscleThumb from './MuscleThumb'
+import { X, CalendarX2 } from 'lucide-react'
 
 export default function DayDetailModal({ day, dayBlock, isToday, onClose }) {
   const { exercises: catalogExercises } = useCatalog()
@@ -45,15 +46,13 @@ export default function DayDetailModal({ day, dayBlock, isToday, onClose }) {
                 const ex = catalogExercises.find((e) => e.id === item.exercise_id)
                 return (
                   <div key={i} className="bg-panel-card rounded-2xl border border-panel-border p-3.5">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-neon-green/10 border border-neon-green/20 shrink-0">
-                        <Dumbbell size={12} className="text-neon-green" />
-                      </div>
+                    <div className="flex items-center gap-2.5">
+                      <MuscleThumb muscles={ex?.muscles} size={36} />
                       <span className="flex-1 min-w-0 text-sm text-slate-200 truncate">{ex?.name ?? '—'}</span>
                       <span className="text-xs font-mono text-neon-green shrink-0">{item.sets}×{item.reps}</span>
                     </div>
                     {(item.modulo_tactico || item.peso_sugerido) && (
-                      <div className="flex items-center gap-1.5 flex-wrap mt-2 ml-9">
+                      <div className="flex items-center gap-1.5 flex-wrap mt-2 ml-[46px]">
                         {item.modulo_tactico && (
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-panel-bg border border-panel-border text-slate-400">
                             {item.modulo_tactico}
@@ -67,7 +66,7 @@ export default function DayDetailModal({ day, dayBlock, isToday, onClose }) {
                       </div>
                     )}
                     {item.notas && (
-                      <p className="text-[11px] text-slate-500 leading-relaxed mt-2 ml-9">{item.notas}</p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed mt-2 ml-[46px]">{item.notas}</p>
                     )}
                   </div>
                 )

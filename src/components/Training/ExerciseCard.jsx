@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Clock, AlertCircle, Shield, Timer } from 'lucide-react'
+import MuscleThumb from './MuscleThumb'
 
 const PRIORITY_CONFIG = {
   critica: { label: 'CRÍTICO', cls: 'bg-red-500/10 border-red-500/30 text-red-400' },
@@ -17,6 +18,7 @@ export default function ExerciseCard({ exercise, accentColor = 'neon-green' }) {
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-3 p-3 text-left"
       >
+        <MuscleThumb muscles={exercise.muscles} size={40} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-slate-200 truncate">{exercise.name}</span>

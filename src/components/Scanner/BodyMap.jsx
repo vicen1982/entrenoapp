@@ -100,3 +100,6 @@ export default function BodyMap({ view, muscleData, selected, onSelect }) {
 
 // Músculos profundos / sistemas sin representación en el mapa
 export const DEEP_MUSCLES = ['psoas', 'transverso', 'cardio']
+
+export const MUSCLE_VIEWS = { front: FRONT_SHAPES, back: BACK_SHAPES }
+export { SILHOUETTE }
