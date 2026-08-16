@@ -141,7 +141,7 @@ function SessionExercise({ exercise, logs, onCompleteSet, onUncompleteSet, onUpd
   return (
     <div className="bg-panel-card rounded-2xl border border-panel-border p-3">
       <div className="flex items-center gap-2 mb-3">
-        <MuscleThumb muscles={exercise.muscles} size={36} />
+        <MuscleThumb muscles={exercise.muscles} size={48} />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-bold text-slate-200 truncate">{exercise.name}</div>
           <div className="text-[10px] text-slate-600 font-mono">

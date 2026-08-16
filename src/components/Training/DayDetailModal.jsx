@@ -47,12 +47,12 @@ export default function DayDetailModal({ day, dayBlock, isToday, onClose }) {
                 return (
                   <div key={i} className="bg-panel-card rounded-2xl border border-panel-border p-3.5">
                     <div className="flex items-center gap-2.5">
-                      <MuscleThumb muscles={ex?.muscles} size={36} />
+                      <MuscleThumb muscles={ex?.muscles} size={52} />
                       <span className="flex-1 min-w-0 text-sm text-slate-200 truncate">{ex?.name ?? '—'}</span>
                       <span className="text-xs font-mono text-neon-green shrink-0">{item.sets}×{item.reps}</span>
                     </div>
                     {(item.modulo_tactico || item.peso_sugerido) && (
-                      <div className="flex items-center gap-1.5 flex-wrap mt-2 ml-[46px]">
+                      <div className="flex items-center gap-1.5 flex-wrap mt-2 ml-[62px]">
                         {item.modulo_tactico && (
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-panel-bg border border-panel-border text-slate-400">
                             {item.modulo_tactico}
@@ -66,7 +66,7 @@ export default function DayDetailModal({ day, dayBlock, isToday, onClose }) {
                       </div>
                     )}
                     {item.notas && (
-                      <p className="text-[11px] text-slate-500 leading-relaxed mt-2 ml-[46px]">{item.notas}</p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed mt-2 ml-[62px]">{item.notas}</p>
                     )}
                   </div>
                 )
