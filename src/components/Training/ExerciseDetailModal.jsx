@@ -1,5 +1,5 @@
 import MuscleThumb from './MuscleThumb'
-import MovementDemo from './MovementDemo'
+import ExercisePhoto from './ExercisePhoto'
 import { X, Clock, AlertCircle, Timer, Shield } from 'lucide-react'
 
 const MUSCLE_LABELS = {
@@ -48,7 +48,7 @@ export default function ExerciseDetailModal({ exercise, planItem, onClose }) {
               <span className="text-[9px] text-slate-500 tracking-widest font-mono">MÚSCULOS</span>
             </div>
             <div className="flex items-center justify-center">
-              <MovementDemo exercise={exercise} size={130} />
+              <ExercisePhoto exercise={exercise} size={130} />
             </div>
           </div>
 

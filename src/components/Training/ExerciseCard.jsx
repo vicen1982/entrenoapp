@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Clock, AlertCircle, Shield, Timer } from 'lucide-react'
 import MuscleThumb from './MuscleThumb'
-import MovementDemo from './MovementDemo'
+import ExercisePhoto from './ExercisePhoto'
 
 const PRIORITY_CONFIG = {
   critica: { label: 'CRÍTICO', cls: 'bg-red-500/10 border-red-500/30 text-red-400' },
@@ -58,7 +58,7 @@ export default function ExerciseCard({ exercise, accentColor = 'neon-green' }) {
               <span className="text-[9px] text-slate-500 tracking-widest font-mono">MÚSCULOS</span>
             </div>
             <div className="flex items-center justify-center">
-              <MovementDemo exercise={exercise} size={104} />
+              <ExercisePhoto exercise={exercise} size={104} />
             </div>
           </div>
 
